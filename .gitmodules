@@ -1,0 +1,12 @@
+[submodule "poky"]
+	path = poky
+	url = https://git.yoctoproject.org/poky
+[submodule "meta-openembedded"]
+	path = meta-openembedded
+	url = https://git.openembedded.org/meta-openembedded
+[submodule "meta-rauc"]
+	path = meta-rauc
+	url = https://github.com/rauc/meta-rauc.git
+[submodule "meta-ptx"]
+	path = meta-ptx
+	url = https://github.com/pengutronix/meta-ptx.git
