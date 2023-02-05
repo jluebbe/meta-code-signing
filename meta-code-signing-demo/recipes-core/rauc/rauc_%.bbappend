@@ -1,15 +1,15 @@
-FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 # keep in mind: the "system.conf" content must be perfect from the beginning
 # you cannot change its content at run-time without restarting the RAUC dbus service!
-SRC_URI_append := "file://system.conf"
+SRC_URI:append := "file://system.conf"
 
 inherit signing
 
 DEPENDS += "extract-cert-native virtual/rauc-signing"
-RAUC_KEYRING_FILE = "extracted.cert.pem"
+RAUC_KEYRING_FILE = "ca.cert.pem"
 RAUC_KEYRING_URI = ""
 
-do_configure_prepend() {
+do_configure:prepend() {
     signing_prepare
 
     signing_use_role rauc
