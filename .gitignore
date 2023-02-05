@@ -1,0 +1,16 @@
+*.pyc
+*.pyo
+/*.patch
+/.repo/
+/build*/
+meta-*/
+*.swp
+*.orig
+*.rej
+*~
+!poky
+!meta-openembedded
+!meta-ptx
+!meta-rauc
+!meta-code-signing
+!meta-code-signing-demo
