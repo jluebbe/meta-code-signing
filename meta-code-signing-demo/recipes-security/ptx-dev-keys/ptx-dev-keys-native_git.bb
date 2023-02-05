@@ -1,9 +1,10 @@
-LICENSE = "CLOSED"
+LICENSE = "MIT"
+LIC_FILES_CHKSUM = "file://COPYING.MIT;md5=838c366f69b72c5df05c96dff79b35f2"
 
-inherit native signing
+inherit signing
 
-SRC_URI = "git://git.pengutronix.de/git/ptx-code-signing-dev;protocol=https"
-SRCREV = "c627af482b5291edded6b3d077f9e7d1d87c70a7"
+SRC_URI = "git://git.pengutronix.de/git/ptx-code-signing-dev;protocol=https;branch=master"
+SRCREV = "10b225437acab4db58c321035f7f34965e1553da"
 
 S = "${WORKDIR}/git"
 B = "${WORKDIR}/build"
@@ -45,3 +46,5 @@ do_compile() {
 do_install() {
     signing_import_install
 }
+
+inherit native
