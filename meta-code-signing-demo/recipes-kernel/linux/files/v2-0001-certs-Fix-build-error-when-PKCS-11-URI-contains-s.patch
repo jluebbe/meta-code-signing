@@ -1,0 +1,49 @@
+From 432f1d43af043a5ac74207a0a196aedb91be6325 Mon Sep 17 00:00:00 2001
+From: Jan Luebbe <jlu@pengutronix.de>
+Date: Mon, 30 Jan 2023 17:28:35 +0100
+Subject: [PATCH v2 1/2] certs: Fix build error when PKCS#11 URI contains
+ semicolon
+To: Masahiro Yamada <masahiroy@kernel.org>
+Cc: David Howells <dhowells@redhat.com>,
+    David Woodhouse <dwmw2@infradead.org>,
+    keyrings@vger.kernel.org,
+    linux-kbuild@vger.kernel.org,
+    linux-kernel@vger.kernel.org,
+    kernel@pengutronix.de
+
+When CONFIG_MODULE_SIG_KEY is PKCS#11 URI (pkcs11:*) and contains a
+semicolon, signing_key.x509 fails to build:
+
+  certs/extract-cert pkcs11:token=foo;object=bar;pin-value=1111 certs/signing_key.x509
+  Usage: extract-cert <source> <dest>
+
+Add quotes to the extract-cert argument to avoid splitting by the shell.
+
+This approach was suggested by Masahiro Yamada <masahiroy@kernel.org>.
+
+Upstream-Status: Pending
+
+Fixes: 129ab0d2d9f3 ("kbuild: do not quote string values in include/config/auto.conf")
+Signed-off-by: Jan Luebbe <jlu@pengutronix.de>
+---
+ certs/Makefile | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/certs/Makefile b/certs/Makefile
+index 9486ed924731..799ad7b9e68a 100644
+--- a/certs/Makefile
++++ b/certs/Makefile
+@@ -23,8 +23,8 @@ $(obj)/blacklist_hash_list: $(CONFIG_SYSTEM_BLACKLIST_HASH_LIST) FORCE
+ targets += blacklist_hash_list
+ 
+ quiet_cmd_extract_certs  = CERT    $@
+-      cmd_extract_certs  = $(obj)/extract-cert $(extract-cert-in) $@
+-extract-cert-in = $(or $(filter-out $(obj)/extract-cert, $(real-prereqs)),"")
++      cmd_extract_certs  = $(obj)/extract-cert "$(extract-cert-in)" $@
++extract-cert-in = $(filter-out $(obj)/extract-cert, $(real-prereqs))
+ 
+ $(obj)/system_certificates.o: $(obj)/x509_certificate_list
+ 
+-- 
+2.30.2
+
