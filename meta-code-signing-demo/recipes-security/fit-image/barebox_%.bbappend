@@ -1,41 +1,37 @@
 #
-# Provide a device tree snippet with the public key information for bootloader's device tree inclusion
-#
-# Documentation: refer 'documentation/chain_of_trust.rst'
-#
-# Note: due to the use of a source type device tree snippet, the generation is
-# more complex than the binary attachment procedure u-boot uses.
+# Provide a device tree snippet with the public key information for
+# bootloader's device tree inclusion
 #
 # The signing must be setup globally, because it must be consistent in the
 # bootloader's public key and the generated FIT image to boot later on.
 #
-# The checksum algorithm for the FIT image component 'kernel'
-#   FIT_IMAGE_KERNEL_CHECKSUM_ALGO = "sha1"
-# -> defaults to "sha1" if not otherwise set.
-#
-# The checksum algorithm for the FIT image component 'device-tree'
-#  FIT_IMAGE_DTB_CHECKSUM_ALGO = "sha1"
-# -> defaults to the one for the 'kernel' component if not otherwise set
+# The checksum algorithm for the FIT image components
+#   FIT_IMAGE_CHECKSUM_ALGO = "sha256"
+# -> defaults to "sha256" if not otherwise set.
 #
 # The signing key to be used. Provide the:
 #  FIT_IMAGE_SIGNING_KEY_ROLE = "name"
 # -> needs to match the signing key role (as requred by uboot-mkimage)
 #
 # The signing algorithm
-#  FIT_IMAGE_SIGNING_ALGO = "sha1,rsa4096"
-# -> defaults to "sha1,rsa4096" if not otherwise set
+#  FIT_IMAGE_SIGNING_ALGO = "sha256,rsa4096"
+# -> defaults to "${FIT_IMAGE_CHECKSUM_ALGO},rsa4096" if not otherwise set
 #
-FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
-
+#
 # We need the 'mkimage' tool from the u-boot tools and a device tree compiler
 # to do our job here
-DEPENDS += "u-boot-tools-native dtc-native"
+DEPENDS += "u-boot-tools-native dtc-native virtual/fit-signing"
 
 # use documented defaults if not otherwise set
+# these defaults must correspond to the values used in linux-fit-image.bb
+# Supported checksum and signing algorithms are:
+# - sha1,rsa2048
+# - sha256,rsa2048
+# - sha256,rsa4096
+#
 FIT_IMAGE_SIGNING_KEY_ROLE ?= "fit"
-FIT_IMAGE_KERNEL_CHECKSUM_ALGO ?= "sha1"
-FIT_IMAGE_DTB_CHECKSUM_ALGO ?= "${FIT_IMAGE_KERNEL_CHECKSUM_ALGO}"
-FIT_IMAGE_SIGNING_ALGO ?= "sha1,rsa4096"
+FIT_IMAGE_CHECKSUM_ALGO ?= "sha256"
+FIT_IMAGE_SIGNING_ALGO ?= "${FIT_IMAGE_CHECKSUM_ALGO},rsa4096"
 
 # Where the bootloader's build system expects the public key snippet for inclusion
 FIT_IMAGE_PUB_KEY = "${WORKDIR}/signature-snippet.dtsi"
@@ -74,26 +70,26 @@ create_its_for_signature_extraction() {
 	#address-cells = <1>;
 
 	images {
-		kernel@1 {
+		kernel {
 			data = /incbin/("/dev/null");
-			hash@1 {
-				algo = "${FIT_IMAGE_KERNEL_CHECKSUM_ALGO}";
+			hash {
+				algo = "${FIT_IMAGE_CHECKSUM_ALGO}";
 			};
 		};
-		fdt@1 {
+		fdt {
 			data = /incbin/("/dev/null");
-			hash@1 {
-				algo = "${FIT_IMAGE_DTB_CHECKSUM_ALGO}";
+			hash {
+				algo = "${FIT_IMAGE_CHECKSUM_ALGO}";
 			};
 		};
 	};
 
 	configurations {
-		default = "conf@1";
-		conf@1 {
-			kernel = "kernel@1";
-			fdt = "fdt@1";
-			signature@1 {
+		default = "conf";
+		conf {
+			kernel = "kernel";
+			fdt = "fdt";
+			signature {
 				algo = "${FIT_IMAGE_SIGNING_ALGO}";
 				key-name-hint = "${FIT_IMAGE_SIGNING_KEY_ROLE}";
 				sign-images = "fdt", "kernel";
