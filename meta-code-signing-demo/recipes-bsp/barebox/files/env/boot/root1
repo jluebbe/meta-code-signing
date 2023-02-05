@@ -1,0 +1,9 @@
+#!/bin/sh
+
+KERNEL=/dev/virtioblk0.fit1
+
+# use the first partition
+global linux.bootargs.rootfs="root=/dev/vda4 rauc.slot=system1 rootwait"
+
+# this boots a FIT image, which contains all required parts at once
+bootm -v ${KERNEL}
