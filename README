@@ -1,3 +1,15 @@
-This repository is not (yet) a real layer, just a bbclass and a collection of
-recipes and appends for https://pretalx.com/oe-workshop-2020/talk/XHKQ3M/ at
-the OpenEmbedded Workshop 2020.
+meta-code-signing provides infrastructure for unifying access to keys on the
+file system and HSMs.
+
+This repository contains two layers:
+
+meta-code-signing:
+  A reusable layer providing signing.bbclass, which also contains some
+  documentation. This could be upstreamed to meta-oe.
+
+meta-code-signing-demo:
+  qemu-based demo with signed fit image, dm-verity, rauc bundle and kernel
+  modules.
+
+A talk about this layer was held at OpenEmbedded Workshop 2023:
+https://pretalx.com/openembedded-workshop-2023/talk/3C8MFF/
