@@ -1,0 +1,51 @@
+#!/bin/sh
+
+verity_enabled() {
+	if [ ! -e /verity-params ]; then
+		debug "verity-params doesn't exist"
+		return 1
+	fi
+
+	return 0
+}
+
+verity_run() {
+	msg "Loading verity parameters..."
+	. /verity-params
+
+	msg "  verity root hash: $VERITY_ROOT_HASH"
+
+	if [ -z "$bootparam_noverity" ]; then
+		msg "Configuring verity device mapper target for ${bootparam_root}..."
+		dmsetup create verity -r --table "0 $VERITY_DATA_SECTORS verity 1 \
+			${bootparam_root} ${bootparam_root} \
+			$VERITY_DATA_BLOCK_SIZE $VERITY_HASH_BLOCK_SIZE \
+			$VERITY_DATA_BLOCKS $VERITY_DATA_BLOCKS \
+			$VERITY_HASH_ALGORITHM $VERITY_ROOT_HASH $VERITY_SALT"
+
+		msg "Mounting rootfs from ${bootparam_root}..."
+		mkdir /ro-root
+		mount -o ro /dev/dm-0 /ro-root || fatal "Failed to mount rootfs!"
+	else
+		msg "Skipping verity device mapper target for ${bootparam_root}..."
+		msg "Mounting rootfs from ${bootparam_root}..."
+		mkdir /ro-root
+		mount -o ro ${bootparam_root} /ro-root || fatal "Failed to mount rootfs!"
+	fi
+
+	msg "Creating tmpfs..."
+	mkdir /rw-root
+	mount -t tmpfs -o size=32M,nr_inodes=16k tmpfs /rw-root || fatal "Failed to create tmpfs!"
+
+	msg "Mounting overlayfs..."
+	mkdir /rw-root/overlay /rw-root/work
+	mount -t overlay -o lowerdir=/ro-root,upperdir=/rw-root/overlay,workdir=/rw-root/work overlay /rootfs || fatal "Failed to mount overlayfs!"
+
+	msg "Move overlay components..."
+	mkdir /rootfs/ro-root /rootfs/rw-root
+	mount --move /ro-root /rootfs/ro-root || fatal "Failed to move ro-root mount point!"
+	mount --move /rw-root /rootfs/rw-root || fatal "Failed to move rw-root mount point!"
+
+	# rootfs is done
+	bootparam_root=
+}

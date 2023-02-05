@@ -1,0 +1,10 @@
+#!/bin/sh
+
+shell_enabled() {
+	return 0
+}
+
+shell_run() {
+	info "Dropping to shell"
+	sh
+}
