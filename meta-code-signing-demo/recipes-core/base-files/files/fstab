@@ -5,4 +5,4 @@ tmpfs                /run                 tmpfs      mode=0755,nodev,nosuid,stri
 tmpfs                /var/volatile        tmpfs      defaults              0  0
 
 /dev/vda5            /srv                 auto       defaults              0  0
-
+deploy               /deploy              9p         msize=16777216        0  0

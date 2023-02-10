@@ -3,6 +3,7 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 SRC_URI += " \
     file://v2-0001-certs-Fix-build-error-when-PKCS-11-URI-contains-s.patch \
     file://v2-0002-kbuild-modinst-Fix-build-error-when-CONFIG_MODULE.patch \
+    file://9pfs.cfg \
     file://modsign.cfg \
     file://overlay.cfg \
 "

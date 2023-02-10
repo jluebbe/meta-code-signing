@@ -8,5 +8,6 @@ qemu-system-arm -nographic -machine virt -cpu cortex-a15 \
   -d unimp -m 1057 \
   -kernel barebox-dt-2nd.img \
   -device virtio-blk-device,drive=hd0 \
-  -drive if=none,file=qemu-virt-image.qcow,id=hd0
+  -drive if=none,file=qemu-virt-image.qcow,id=hd0 \
+  -virtfs local,id=rootfs,path=$(pwd),security_model=none,readonly,mount_tag=deploy
 
