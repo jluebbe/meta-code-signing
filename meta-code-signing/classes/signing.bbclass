@@ -31,6 +31,25 @@
 #
 #   SIGNING_PKCS11_URI[fit] = "pkcs11:serial=DENK0200554;object=ptx-dev-rauc&pin-value=123456"
 #   SIGNING_PKCS11_MODULE[fit] = "/usr/lib/x86_64-linux-gnu/opensc-pkcs11.so"
+#
+# Examples for defining roles and importing keys:
+# 
+#   meta-code-signing/recipes-security/signing-keys/dummy-rsa-key-native.bb
+#   meta-code-signing-demo/recipes-security/ptx-dev-keys/ptx-dev-keys-native_git.bb
+#
+# Examples for using keys for signing:
+#
+#   meta-code-signing-demo/recipes-security/fit-image/linux-fit-image.bb
+#   meta-code-signing-demo/recipes-core/bundles/update-bundle.bb
+#
+# Examples for using keys for authentication:
+#
+#   meta-code-signing-demo/recipes-security/fit-image/barebox_%.bbappend
+#   meta-code-signing-demo/recipes-core/rauc/rauc_%.bbappend
+#
+# Examples for using keys for both signing and authentication:
+#
+#   meta-code-signing-demo/recipes-kernel/linux/linux-yocto_6.1.bbappend
 
 SIGNING_PKCS11_URI ?= ""
 SIGNING_PKCS11_MODULE ?= ""
