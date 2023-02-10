@@ -13,3 +13,27 @@ meta-code-signing-demo:
 
 A talk about this layer was held at OpenEmbedded Workshop 2023:
 https://pretalx.com/openembedded-workshop-2023/talk/3C8MFF/
+
+To try the demo, run only the following steps should be needed on a system
+prepared for building with Yocto:
+
+  $ . ./oe-init-build-env
+  $ vi conf/local.conf
+  ... set DL_DIR and other options needed for your system
+  $ bitbake qemu-virt-image update-bundle
+  $ ./qemu.sh
+
+In qemu, the following steps should happen:
+
+- barebox starts and loads the kernel FIT image
+- the kernel starts and mounts the dm-verity-protected rootfs
+- the kernel loads and checks module signatures
+
+After logging in as root, you can use rauc to check the bundle signature:
+
+  rauc info /deploy/update-bundle-qemuarm.raucb
+
+or install an update:
+
+  rauc install /deploy/update-bundle-qemuarm.raucb
+
