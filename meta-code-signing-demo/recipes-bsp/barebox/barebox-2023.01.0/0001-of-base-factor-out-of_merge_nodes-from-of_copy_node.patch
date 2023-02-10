@@ -1,0 +1,66 @@
+From cac2fb940c9c7c090ceaa60d6c8cf83653b59e04 Mon Sep 17 00:00:00 2001
+From: Ahmad Fatoum <a.fatoum@pengutronix.de>
+Date: Fri, 10 Feb 2023 15:42:43 +0100
+Subject: [PATCH 1/4] of: base: factor out of_merge_nodes from of_copy_node
+
+Later commit will need to merge two DTs from the root up. Refactor
+that part out of of_copy_node to make it usable on its own.
+
+Signed-off-by: Ahmad Fatoum <a.fatoum@pengutronix.de>
+Upstream-Status: Submitted
+---
+ drivers/of/base.c | 17 ++++++++++++-----
+ include/of.h      |  1 +
+ 2 files changed, 13 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/of/base.c b/drivers/of/base.c
+index 221050a19715..9879d389c9ce 100644
+--- a/drivers/of/base.c
++++ b/drivers/of/base.c
+@@ -2616,19 +2616,26 @@ out:
+ 	return dn;
+ }
+ 
+-struct device_node *of_copy_node(struct device_node *parent, const struct device_node *other)
++void of_merge_nodes(struct device_node *np, const struct device_node *other)
+ {
+-	struct device_node *np, *child;
++	struct device_node *child;
+ 	struct property *pp;
+ 
+-	np = of_new_node(parent, other->name);
+-	np->phandle = other->phandle;
+-
+ 	list_for_each_entry(pp, &other->properties, list)
+ 		of_new_property(np, pp->name, pp->value, pp->length);
+ 
+ 	for_each_child_of_node(other, child)
+ 		of_copy_node(np, child);
++}
++
++struct device_node *of_copy_node(struct device_node *parent, const struct device_node *other)
++{
++	struct device_node *np;
++
++	np = of_new_node(parent, other->name);
++	np->phandle = other->phandle;
++
++	of_merge_nodes(np, other);
+ 
+ 	return np;
+ }
+diff --git a/include/of.h b/include/of.h
+index c19a17584e47..5d4bf9196f61 100644
+--- a/include/of.h
++++ b/include/of.h
+@@ -175,6 +175,7 @@ extern struct device_node *of_new_node(struct device_node *parent,
+ 				const char *name);
+ extern struct device_node *of_create_node(struct device_node *root,
+ 					const char *path);
++extern void of_merge_nodes(struct device_node *np, const struct device_node *other);
+ extern struct device_node *of_copy_node(struct device_node *parent,
+ 				const struct device_node *other);
+ extern struct device_node *of_dup(const struct device_node *root);
+-- 
+2.30.2
+

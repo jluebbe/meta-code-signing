@@ -1,0 +1,40 @@
+From 0f55fd32e0607d63b983eb0cc02894e8fa29b27d Mon Sep 17 00:00:00 2001
+From: Ahmad Fatoum <a.fatoum@pengutronix.de>
+Date: Fri, 10 Feb 2023 16:44:36 +0100
+Subject: [PATCH 3/4] boards: qemu-virt: ensure board driver probe at
+ postcore_initcall level
+
+Qemu board driver fixups should be applied very early to be able to
+influence core components, even if they are controlled directly by
+initcalls. For this reason, enforce probe of the driver at postcore_initcall
+level.
+
+Signed-off-by: Ahmad Fatoum <a.fatoum@pengutronix.de>
+Upstream-Status: Submitted
+---
+ common/boards/qemu-virt/board.c | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/common/boards/qemu-virt/board.c b/common/boards/qemu-virt/board.c
+index 4064409c80d3..515317b83c38 100644
+--- a/common/boards/qemu-virt/board.c
++++ b/common/boards/qemu-virt/board.c
+@@ -65,4 +65,14 @@ static struct driver_d virt_board_driver = {
+ 	.of_compatible = virt_of_match,
+ };
+ 
+-postcore_platform_driver(virt_board_driver);
++static int virt_board_driver_init(void)
++{
++	int ret;
++
++	ret = platform_driver_register(&virt_board_driver);
++	if (ret)
++		return ret;
++
++	return of_devices_ensure_probed_by_dev_id(virt_of_match);
++}
++postcore_initcall(virt_board_driver_init);
+-- 
+2.30.2
+

@@ -1,0 +1,82 @@
+From a7c1d068897e76bcea3e21f03aaff8220714d052 Mon Sep 17 00:00:00 2001
+From: Ahmad Fatoum <a.fatoum@pengutronix.de>
+Date: Fri, 10 Feb 2023 15:39:52 +0100
+Subject: [PATCH 4/4] boards: qemu-virt: support passing in FIT public key
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+FIT public key is usually passed in via board DT. Usual way to use
+barebox with QEMU Virt however is to use DT supplied by Qemu and apply
+overlay to it. mkimage doesn't generate overlay DTB though. To make
+barbebox Qemu Virt behave like other boards, let's define a dummy DT
+that includes CONFIG_BOOTM_FITIMAGE_PUBKEY, which is merged with the
+barebox live device tree.
+
+Suggested-by: Jan Lübbe <jlu@pengutronix.de>
+Signed-off-by: Ahmad Fatoum <a.fatoum@pengutronix.de>
+Upstream-Status: Submitted
+---
+ common/boards/qemu-virt/Makefile            | 2 +-
+ common/boards/qemu-virt/board.c             | 7 ++++++-
+ common/boards/qemu-virt/fitimage-pubkey.dts | 7 +++++++
+ 3 files changed, 14 insertions(+), 2 deletions(-)
+ create mode 100644 common/boards/qemu-virt/fitimage-pubkey.dts
+
+diff --git a/common/boards/qemu-virt/Makefile b/common/boards/qemu-virt/Makefile
+index 88184e9a7969..00bfdfbda696 100644
+--- a/common/boards/qemu-virt/Makefile
++++ b/common/boards/qemu-virt/Makefile
+@@ -1,7 +1,7 @@
+ # SPDX-License-Identifier: GPL-2.0-only
+ 
+ obj-y += board.o
+-obj-y += overlay-of-flash.dtb.o
++obj-y += overlay-of-flash.dtb.o fitimage-pubkey.dtb.o
+ ifeq ($(CONFIG_RISCV),y)
+ DTC_CPP_FLAGS_overlay-of-flash.dtb := -DRISCV_VIRT=1
+ endif
+diff --git a/common/boards/qemu-virt/board.c b/common/boards/qemu-virt/board.c
+index 515317b83c38..d5389bfbb4b8 100644
+--- a/common/boards/qemu-virt/board.c
++++ b/common/boards/qemu-virt/board.c
+@@ -35,10 +35,11 @@ static inline void arm_virt_init(void) {}
+ #endif
+ 
+ extern char __dtb_overlay_of_flash_start[];
++extern char __dtb_fitimage_pubkey_start[];
+ 
+ static int virt_probe(struct device_d *dev)
+ {
+-	struct device_node *overlay;
++	struct device_node *overlay, *pubkey;
+ 	void (*init)(void);
+ 
+ 	init = device_get_match_data(dev);
+@@ -47,6 +48,10 @@ static int virt_probe(struct device_d *dev)
+ 
+ 	overlay = of_unflatten_dtb(__dtb_overlay_of_flash_start, INT_MAX);
+ 	of_overlay_apply_tree(dev->device_node, overlay);
++
++	pubkey = of_unflatten_dtb(__dtb_fitimage_pubkey_start, INT_MAX);
++	of_merge_nodes(dev->device_node, pubkey);
++
+ 	/* of_probe() will happen later at of_populate_initcall */
+ 
+ 	return 0;
+diff --git a/common/boards/qemu-virt/fitimage-pubkey.dts b/common/boards/qemu-virt/fitimage-pubkey.dts
+new file mode 100644
+index 000000000000..497799fa4b60
+--- /dev/null
++++ b/common/boards/qemu-virt/fitimage-pubkey.dts
+@@ -0,0 +1,7 @@
++/dts-v1/;
++
++#ifdef CONFIG_BOOTM_FITIMAGE_PUBKEY
++#include CONFIG_BOOTM_FITIMAGE_PUBKEY
++#endif
++
++/{ };
+-- 
+2.30.2
+
